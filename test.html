@@ -5,11 +5,36 @@
     <title></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/style.css" rel="stylesheet">
 </head>
 
 <body>
+    <script>
+        // function func(arg) {
+        //     let arg; // 报错
+        // }
 
+        'use strict'
+        var constantize = (obj) => {
+            Object.freeze(obj);
+            Object.keys(obj).forEach((key, value) => {
+                if (typeof obj[key] === 'object') {
+                    constantize(obj[key]);
+                }
+            });
+            return obj;
+        };
+        const a = constantize({
+            b: {
+                c: {}
+            }
+        });
+        a.b.c.prop = 5;
+        a.b.c = 5;
+        //a.b = 5;
+        //a.p = 5;
+        console.log(a.b);
+        console.log(a.p);
+    </script>
 </body>
 
 </html>
