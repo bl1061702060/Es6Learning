@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>字符串拓展</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="require.min.js"></script>
+</head>
+
+<body>
+    <div id="showResults">
+
+    </div>
+    <script>
+        "use strict"
+        let dom = document.getElementById("showResults");
+        '\u004F\u030C'.normalize('NFC').length; // 1
+        '\u004F\u030C'.normalize('NFKD').length; // 2
+        'x'.repeat(3); // "xxx"
+        'hello'.repeat(2); // "hellohello"
+        'na'.repeat(0); // ""
+        'na'.repeat(2.9); // "nana"
+        //'na'.repeat(Infinity)
+        // RangeError
+        //'na'.repeat(-1)
+        // RangeError
+        'na'.repeat(-0.9); // ""
+        'na'.repeat(NaN); // ""
+        'na'.repeat('A'); // ""
+        'na'.repeat('3'); // "nanana"
+
+        (function(arg) {
+            alert(arg);
+        })("aaa")
+        // false
+    </script>
+</body>
+
+</html>
