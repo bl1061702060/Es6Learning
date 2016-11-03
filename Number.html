@@ -79,6 +79,18 @@
         Number.isSafeInteger(Number.MIN_SAFE_INTEGER); // true
         Number.isSafeInteger(Number.MAX_SAFE_INTEGER); // true
         Number.isSafeInteger(Number.MAX_SAFE_INTEGER + 1); // false
+
+        Math.log10(2); // 0.3010299956639812
+        Math.log10(1); // 0
+        Math.log10(0); // -Infinity
+        Math.log10(-2); // NaN
+        Math.log10(100000); // 5
+        Math.log1p(1); // 0.6931471805599453
+        Math.log1p(0); // 0
+        Math.log1p(-1); // -Infinity
+        Math.log1p(-2); // NaN
+        2 ** 2; // 4
+        2 ** 3; // 8
     </script>
 </body>
 
