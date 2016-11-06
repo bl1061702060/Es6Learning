@@ -28,12 +28,24 @@
                 c: {}
             }
         });
-        a.b.c.prop = 5;
-        a.b.c = 5;
+        //a.b.c.prop = 5;
+        //a.b.c = 5;
         //a.b = 5;
         //a.p = 5;
         console.log(a.b);
         console.log(a.p);
+        Math.sign(-5); // -1
+        Math.sign(5); // +1
+        Math.sign(0); // +0
+        Math.sign(-0); // -0
+        Math.sign(NaN); // NaN
+        Math.sign('foo'); // NaN
+        Math.sign();
+        Math.clz32(0); // 32
+        Math.clz32(1); // 31
+        Math.clz32(1000); // 22
+        Math.clz32(0b01000000000000000000000000000000); // 1
+        Math.clz32(0b00100000000000000000000000000000); //
     </script>
 </body>
 
