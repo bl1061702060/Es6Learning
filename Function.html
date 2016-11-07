@@ -8,6 +8,9 @@
 </head>
 
 <body>
+    <div></div>
+    <div></div>
+    <div></div>
     <script>
         //1. 函数参数的默认值
         {
@@ -144,6 +147,80 @@
                 console.log(x3);
             }
             foo1(); // 3
+        }
+        //2. rest参数
+        {
+            //ES6引入rest参数（形式为“...变量名”），用于获取函数的多余参数，这样就不需要使用arguments对象了。rest参数搭配的变量是一个数组，该变量将多余的参数放入数组中。
+            function add(...values) {
+                let sum = 0;
+
+                for (var val of values) {
+                    sum += val;
+                }
+
+                return sum;
+            }
+
+            add(2, 5, 3); // 10
+            // arguments变量的写法
+            function sortNumbers() {
+                return Array.prototype.slice.call(arguments).sort();
+            }
+            const sortNumbers2 = (...numbers) => numbers.sort();
+            sortNumbers(3, 4, 5, 6, 1, 7);
+            sortNumbers2(3, 4, 5, 6, 1, 7);
+            //注意，rest参数之后不能再有其他参数（即只能是最后一个参数），否则会报错。
+            // 报错
+            //function f(a, ...b, c) {
+            // ...
+            //}//Uncaught SyntaxError: Rest parameter must be last formal parameter
+            //函数的length属性，不包括rest参数。
+            (function(a) {}).length; // 1
+            (function(...a) {}).length; // 0
+            (function(a, ...b) {}).length; // 1
+        }
+        //3. 扩展运算符 
+        {
+            //扩展运算符（ spread） 是三个点（...）。它好比rest参数的逆运算， 将一个数组转为用逗号分隔的参数序列。
+            console.log(...[1, 2, 3]); // 1 2 3
+            console.log(1, ...[2, 3, 4], 5); // 1 2 3 4 5
+            console.log(...document.querySelectorAll('div')); // 1 2 3 4 5
+            [...document.querySelectorAll('div')]; // [<div>, <div>, <div>]
+
+            //替代数组的apply方法
+            //由于扩展运算符可以展开数组， 所以不再需要apply方法， 将数组转为函数的参数了。
+            // ES5的写法
+            function f(x, y, z) {
+                // ...
+            }
+            var args = [0, 1, 2, 3];
+            f.apply(null, args);
+
+            // ES6的写法
+            function f1(x, y, z) {
+                // ...
+            }
+            var args = [0, 1, 2, 3];
+            f1(...args);
+            
+            //下面是扩展运算符取代apply方法的一个实际的例子，应用Math.max方法，简化求出一个数组最大元素的写法。
+            // ES5的写法
+            Math.max.apply(null, [14, 3, 77]);
+            // ES6的写法
+            Math.max(...[14, 3, 77]);
+            // 等同于
+            Math.max(14, 3, 77);
+
+            //上面代码表示，由于JavaScript不提供求数组最大元素的函数，所以只能套用Math.max函数，将数组转为一个参数序列，然后求最大值。有了扩展运算符以后，就可以直接用Math.max了。
+            //另一个例子是通过push函数，将一个数组添加到另一个数组的尾部。
+            // ES5的写法
+            var arr1 = [0, 1, 2];
+            var arr2 = [3, 4, 5];
+            Array.prototype.push.apply(arr1, arr2);
+            // ES6的写法
+            var arr1 = [0, 1, 2];
+            var arr2 = [3, 4, 5];
+            arr1.push(...arr2);
         }
     </script>
 </body>
