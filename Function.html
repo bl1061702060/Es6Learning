@@ -606,9 +606,253 @@
 
             // ES6的写法
             var fix = f => (x => f(v => x(x)(v)))(x => f(v => x(x)(v)));
-            fix(x => x * x)(3)
+        }
+        //7. 绑定 this 
+        {
+            //箭头函数可以绑定this对象，大大减少了显式绑定this对象的写法（call、apply、bind）。但是，箭头函数并不适用于所有场合，所以ES7提出了“函数绑定”（function bind）运算符，用来取代call、apply、bind调用。虽然该语法还是ES7的一个提案，但是Babel转码器已经支持。
+            //函数绑定运算符是并排的两个双冒号（::），双冒号左边是一个对象，右边是一个函数。该运算符会自动将左边的对象，作为上下文环境（即this对象），绑定到右边的函数上面。
+
+            //foo::bar;
+            // 等同于
+            //bar.bind(foo);
+
+            //foo::bar(...arguments);
+            // 等同于
+            //bar.apply(foo, arguments);
+
+            // const hasOwnProperty = Object.prototype.hasOwnProperty;
+            //function hasOwn(obj, key) {
+            //     return obj::hasOwnProperty(key);
+            // }
+
+            //如果双冒号左边为空，右边是一个对象的方法，则等于将该方法绑定在该对象上面。
+            //var method = obj::obj.foo;
+            // 等同于
+            //var method1 = ::obj.foo;
+
+            //let log = ::console.log;
+            // 等同于
+            //var log1 = console.log.bind(console);
 
 
+            //由于双冒号运算符返回的还是原对象，因此可以采用链式写法。
+            // 例一
+            //import {
+            //    map,
+            //    takeWhile,
+            //    forEach
+            // } from "iterlib";
+
+            //getPlayers()::map(x => x.character())::takeWhile(x => x.strength > 100)::forEach(x => console.log(x));
+
+            // 例二
+            //let {
+            //     find,
+            //    html
+            // } = jake;
+            //document.querySelectorAll("div.myClass")::find("p")::html("hahaha");
+        }
+        //8. 尾调用优化
+        {
+            //什么是尾调用？
+            //尾调用（Tail Call）是函数式编程的一个重要概念，本身非常简单，一句话就能说清楚，就是指某个函数的最后一步是调用另一个函数。
+
+            //"use strict";
+            let g = x => x + 1;
+            let h = x => x * 2;
+
+            function f(x) {
+                return g(x);
+            }
+            // 情况一
+            function f1(x) {
+                let y = g(x);
+                return y;
+            }
+
+            // 情况二
+            function f2(x) {
+                return g(x) + 1;
+            }
+
+            // 情况三
+            function f3(x) {
+                g(x);
+            }
+            //尾调用不一定出现在函数尾部，只要是最后一步操作即可。
+            function f4(x) {
+                if (x > 0) {
+                    return g(x)
+                }
+                return h(x);
+            }
+
+            //尾调用优化
+            //函数调用会在内存形成一个“调用记录”，又称“调用帧”（call frame），保存调用位置和内部变量等信息。如果在函数A的内部调用函数B，那么在A的调用帧上方，还会形成一个B的调用帧。等到B运行结束，将结果返回到A，B的调用帧才会消失。如果函数B内部还调用函数C，那就还有一个C的调用帧，以此类推。所有的调用帧，就形成一个“调用栈”（call stack）。
+
+            //尾调用由于是函数的最后一步操作，所以不需要保留外层函数的调用帧，因为调用位置、内部变量等信息都不会再用到了，只要直接用内层函数的调用帧，取代外层函数的调用帧就可以了。
+            function f5() {
+                let m = 1;
+                let n = 2;
+                return g(m + n);
+            }
+            f5();
+            // 等同于
+            function f6() {
+                return g(3);
+            }
+            f6();
+            // 等同于
+            g(3);
+
+            //调用g之后，函数f就结束了，所以执行到最后一步，完全可以删除 f(x) 的调用帧，只保留 g(3) 的调用帧。这就叫做“尾调用优化”（Tail call optimization），即只保留内层函数的调用帧
+            //如果所有函数都是尾调用，那么完全可以做到每次执行时，调用帧只有一项，这将大大节省内存。这就是“尾调用优化”的意义。
+            function addOne(a) {
+                var one = 1;
+
+                function inner(b) {
+                    return b + one;
+                }
+                return inner(a);
+            }
+            //上面的函数不会进行尾调用优化， 因为内层函数inner用到了外层函数addOne的内部变量one。
+
+            //尾递归
+            //函数调用自身，称为递归。如果尾调用自身，就称为尾递归。
+            //递归非常耗费内存，因为需要同时保存成千上百个调用帧，很容易发生“栈溢出”错误（stack overflow）。但对于尾递归来说，由于只存在一个调用帧，所以永远不会发生“栈溢出”错误
+
+            let factorial = function factorial(n) {
+                if (n === 1) return 1;
+                return n * factorial(n - 1);
+            }
+            factorial(5) // 120
+
+            //上面代码是一个阶乘函数，计算n的阶乘，最多需要保存n个调用记录，复杂度 O(n) 。
+            //如果改写成尾递归，只保留一个调用记录，复杂度 O(1) 。
+            function factorial1(n, total) {
+                if (n === 1) return total;
+                return factorial1(n - 1, n * total);
+            }
+            factorial1(5, 1) // 120
+
+            //如果是非尾递归的fibonacci 递归方法
+            function Fibonacci(n) {
+                if (n <= 1) {
+                    return 1
+                };
+                return Fibonacci(n - 1) + Fibonacci(n - 2);
+            }
+
+            Fibonacci(10); // 89
+            //Fibonacci(100);
+            // Fibonacci(500)// 堆栈溢出了
+
+            //如果我们使用尾递归优化过的fibonacci 递归算法
+            function Fibonacci2(n, ac1 = 1, ac2 = 1) {
+                if (n <= 1) {
+                    return ac2
+                };
+                return Fibonacci2(n - 1, ac2, ac1 + ac2);
+            }
+            Fibonacci2(100); // 573147844013817200000
+            Fibonacci2(1000); // 7.0330367711422765e+208
+            Fibonacci2(10000); // Infinity
+
+            //递归函数的改写
+            //尾递归的实现，往往需要改写递归函数，确保最后一步只调用自身。做到这一点的方法，就是把所有用到的内部变量改写成函数的参数。
+            //两个方法可以解决单参数函数变多参数函数不直观的问题。方法一是在尾递归函数之外，再提供一个正常形式的函数。
+            //函数式编程有一个概念， 叫做柯里化（ currying）， 意思是将多参数的函数转换成单参数的形式。 这里也可以使用柯里化。
+            function currying(fn, n) {
+                return function(m) {
+                    return fn.call(this, m, n);
+                };
+            }
+
+            function tailFactorial(n, total) {
+                if (n === 1) return total;
+                return tailFactorial(n - 1, n * total);
+            }
+            const factorial2 = currying(tailFactorial, 1);
+            factorial2(5); // 120
+
+            //上面代码通过柯里化，将尾递归函数 tailFactorial 变为只接受1个参数的 factorial 。
+
+            //第二种方法就简单多了，就是采用ES6的函数默认值。
+            function factorial3(n, total = 1) {
+                if (n === 1) return total;
+                return factorial3(n - 1, n * total);
+            }
+            factorial3(5); // 120
+
+            function restricted() {
+                "use strict";
+                //restricted.caller; // 报错
+                //restricted.arguments; // 报错
+            }
+            restricted();
+
+            function sum(x, y) {
+                if (y > 0) {
+                    return sum(x + 1, y - 1);
+                } else {
+                    return x;
+                }
+            };
+            //sum(1, 100000); // Uncaught RangeError: Maximum call stack size exceeded(…)
+
+            //蹦床函数（trampoline）可以将递归执行转为循环执行。
+            function trampoline(f) {
+                while (f && f instanceof Function) {
+                    f = f();
+                }
+                return f;
+            }
+
+            //上面就是蹦床函数的一个实现，它接受一个函数f作为参数。只要f执行后返回一个函数，就继续执行。注意，这里是返回一个函数，然后执行该函数，而不是函数里面调用函数，这样就避免了递归执行，从而就消除了调用栈过大的问题。
+
+            //然后，要做的就是将原来的递归函数，改写为每一步返回另一个函数。
+            function sum1(x, y) {
+                if (y > 0) {
+                    return sum1.bind(null, x + 1, y - 1);
+                } else {
+                    return x;
+                }
+            }
+
+            //上面代码中，sum函数的每次执行，都会返回自身的另一个版本。
+
+            //现在，使用蹦床函数执行sum，就不会发生调用栈溢出。
+            trampoline(sum1(1, 100000));
+            // 100001
+
+            //蹦床函数并不是真正的尾递归优化，下面的实现才是。
+            function tco(f) {
+                var value;
+                var active = false;
+                var accumulated = [];
+
+                return function () {
+                    accumulated.push(arguments);
+                    if (!active) {
+                        active = true;
+                        while (accumulated.length) {
+                            value = f.apply(this, accumulated.shift());
+                        }
+                        active = false;
+                        return value;
+                    }
+                };
+            }
+
+            var sum2 = tco(function(x, y) {
+                if (y > 0) {
+                    return sum2(x + 1, y - 1)
+                } else {
+                    return x
+                }
+            });
+            sum2(1, 100000);
+            // 100001
         }
     </script>
 </body>
