@@ -431,10 +431,10 @@
             };
             obj.__proto__.inherit = '继承的属性'; //继承属
             Object.defineProperty(obj, 'invisible', {
-                enumerable: false,
-                value: '不可数的属性'
-            })
-            //（1）for...in 循环遍历对象自身的和继承的可枚举属性（ 不含Symbol属性）。
+                    enumerable: false,
+                    value: '不可数的属性'
+                })
+                //（1）for...in 循环遍历对象自身的和继承的可枚举属性（ 不含Symbol属性）。
             for (let key in obj) {
                 console.log('for...in:', obj[key]);
             }
@@ -458,6 +458,71 @@
             //     -首先遍历所有属性名为数值的属性， 按照数字排序。 
             //     -其次遍历所有属性名为字符串的属性， 按照生成时间排序。 
             //     -最后遍历所有属性名为Symbol值的属性， 按照生成时间排序。
+        }
+        //8. __proto__属性，Object.setPrototypeOf()，Object.getPrototypeOf()
+        {
+            //（1）__proto__属性
+            //__proto__属性（前后各两个下划线），用来读取或设置当前对象的prototype对象。目前，所有浏览器（包括IE11）都部署了这个属性。
+            // es6的写法
+            let someOtherObj = {
+                a: 'someOtherObj'
+            };
+            let obj1 = {
+                method: function() { //...
+                }
+            };
+            obj1.__proto__ = someOtherObj;
+
+            // es5的写法
+            let obj2 = {};
+            Object.setPrototypeOf(obj2, someOtherObj);
+            obj2.method = function() { //...
+            };
+
+            // 该属性没有写入ES6的正文， 而是写入了附录， 原因是__proto__前后的双下划线， 说明它本质上是一个内部属性， 而不是一个正式的对外的API， 只是由于浏览器广泛支持， 才被加入了ES6。 标准明确规定， 只有浏览器必须部署这个属性， 其他运行环境不一定需要部署， 而且新的代码最好认为这个属性是不存在的。 因此， 无论从语义的角度， 还是从兼容性的角度， 都不要使用这个属性， 而是使用下面的Object.setPrototypeOf()（ 写操作）、 Object.getPrototypeOf()（ 读操作）、 Object.create()（ 生成操作） 代替。
+
+            //如果一个对象本身部署了__proto__属性，则该属性的值就是对象的原型。
+            Object.getPrototypeOf({
+                __proto__: "a"
+            });
+            // null
+
+            //（2） Object.setPrototypeOf() Object.setPrototypeOf方法的作用与__proto__相同， 用来设置一个对象的prototype对象。 它是ES6正式推荐的设置原型对象的方法。
+            // 格式 Object.setPrototypeOf(object, prototype);
+            // 用法
+            let o = Object.setPrototypeOf({}, {
+                a: 'dfd'
+            });
+            let proto = {};
+            let obj3 = {
+                x: 10
+            };
+            Object.setPrototypeOf(obj3, proto);
+            proto.y = 20;
+            proto.z = 40;
+
+            obj3.x; // 10
+            obj3.y; // 20
+            obj3.z; // 40
+            //（3）Object.getPrototypeOf() 该方法与setPrototypeOf方法配套，用于读取一个对象的prototype对象。
+            //格式 Object.getPrototypeOf(obj);
+
+            function Rectangle() {}
+            let rec = new Rectangle();
+            Object.getPrototypeOf(rec) === Rectangle.prototype; // true
+            Object.setPrototypeOf(rec, Object.prototype);
+            Object.getPrototypeOf(rec) === Rectangle.prototype; // false
+        }
+        //9. Object.values()，Object.entries()
+        {
+            //(1)Object.keys()
+            //ES5引入了Object.keys方法， 返回一个数组， 成员是参数对象自身的（ 不含继承的） 所有可遍历（ enumerable） 属性的键名。
+            let obj = {
+                foo: "bar",
+                baz: 42
+            };
+            Object.keys(obj);// ["foo", "baz"]
+
 
         }
     </script>
