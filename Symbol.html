@@ -197,10 +197,10 @@
             Symbol.keyFor(s2) // undefined
 
             //Symbol.for为Symbol值登记的名字， 是全局环境的， 可以在不同的iframe或service worker中取到同一个值。
-            iframe = document.createElement('iframe');
-            iframe.src = String(window.location);
-            document.body.appendChild(iframe);
-            iframe.contentWindow.Symbol.for('foo') === Symbol.for('foo'); // true
+            // var iframe = document.createElement('iframe');
+            // iframe.src = String(window.location);
+            // document.body.appendChild(iframe);
+            // iframe.contentWindow.Symbol.for('foo') === Symbol.for('foo'); // true
         }
         //6. 实例：模块的 Singleton 模式
         {
@@ -211,6 +211,71 @@
 
         }
         //7. 内置的Symbol值 除了定义自己使用的Symbol值以外，ES6还提供了11个内置的Symbol值，指向语言内部使用的方法。
+        //10.Symbol.species
+        {
+            //对象的Symbol.species属性， 指向一个方法。 该对象作为构造函数创造实例时， 会调用这个方法。 即如果this.constructor[Symbol.species] 存在， 就会使用这个属性作为构造函数， 来创造新的实例对象
+
+            class Foo {
+                static get[Symbol.species]() {
+                    return this;
+                }
+                spawn() {
+                    return new this.constructor[Symbol.species](); //不需要写死返回实例类型
+                }
+            }
+            class Bar extends Foo {
+                static get[Symbol.species]() {
+                        return Foo;
+                    } //自定义需要返回的实例类型
+            }
+
+            var a = new Foo();
+            var b = a.spawn();
+            b instanceof Foo; // true
+
+            var x = new Bar();
+            var y = x.spawn();
+            y instanceof Bar; // false
+            y instanceof Foo; // true
+        }
+        //11.Symbol.match 
+        {
+            //对象的Symbol.match属性，指向一个函数。当执行str.match(myObject)时，如果该属性存在，会调用它，返回该方法的返回值。
+            // String.prototype.match(regexp);// 等同于
+            // regexp[Symbol.match](this)
+            class MyMatcher {
+                [Symbol.match](string) {
+                    return 'hello world'.indexOf(string);
+                }
+            }
+
+            'e'.match(new MyMatcher()); // 1
+        }
+        //12.Symbol.replace 
+        {
+            //对象的Symbol.replace属性，指向一个方法，当该对象被String.prototype.replace方法调用时，会返回该方法的返回值。
+            // String.prototype.replace(searchValue, replaceValue);// 等同于
+            // searchValue[Symbol.replace](this, replaceValue);
+        }
+        //13.Symbol.search
+        {
+
+            //对象的Symbol.search属性，指向一个方法，当该对象被String.prototype.search方法调用时，会返回该方法的返回值。
+
+            String.prototype.search(regexp)
+                // 等同于
+            regexp[Symbol.search](this)
+
+            class MySearch {
+                constructor(value) {
+                        this.value = value;
+                    }
+                    [Symbol.search](string) {
+                        return string.indexOf(this.value);
+                    }
+            }
+            'foobar'.search(new MySearch('foo')) // 0
+        }
     </script>
 </body>
 
