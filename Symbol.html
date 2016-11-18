@@ -197,10 +197,21 @@
             Symbol.keyFor(s2) // undefined
 
             //Symbol.for为Symbol值登记的名字， 是全局环境的， 可以在不同的iframe或service worker中取到同一个值。
+<<<<<<< HEAD
             // var iframe = document.createElement('iframe');
             // iframe.src = String(window.location);
             // document.body.appendChild(iframe);
             // iframe.contentWindow.Symbol.for('foo') === Symbol.for('foo'); // true
+=======
+
+            iframe = document.createElement('iframe');
+            iframe.src = String(window.location);
+            document.body.appendChild(iframe);
+            if (iframe.contentWindow) {
+                console.log(iframe.contentWindow.Symbol.for('foo') === Symbol.for('foo')); // true
+            }
+
+>>>>>>> 1c5b0cd9c408144e629f07fa1e2e45670e4a5ecf
         }
         //6. 实例：模块的 Singleton 模式
         {
@@ -211,6 +222,7 @@
 
         }
         //7. 内置的Symbol值 除了定义自己使用的Symbol值以外，ES6还提供了11个内置的Symbol值，指向语言内部使用的方法。
+<<<<<<< HEAD
         //10.Symbol.species
         {
             //对象的Symbol.species属性， 指向一个方法。 该对象作为构造函数创造实例时， 会调用这个方法。 即如果this.constructor[Symbol.species] 存在， 就会使用这个属性作为构造函数， 来创造新的实例对象
@@ -275,6 +287,74 @@
                     }
             }
             'foobar'.search(new MySearch('foo')) // 0
+=======
+
+        //8. Symbol.hasInstance
+        {
+            // 对象的Symbol.hasInstance属性， 指向一个内部方法。 当其他对象使用instanceof运算符， 判断是否为该对象的实例时， 会调用这个方法。 比如， foo instanceof Foo在语言内部， 实际调用的是Foo[Symbol.hasInstance](foo)。
+            class MyClass {
+                [Symbol.hasInstance](foo) {
+                    return foo instanceof Array;
+                }
+            }
+
+            [1, 2, 3] instanceof new MyClass(); // true
+            //上面代码中， MyClass是一个类， new MyClass() 会返回一个实例。 该实例的Symbol.hasInstance方法， 会在进行instanceof运算时自动调用， 判断左侧的运算子是否为Array的实例。
+
+            class Even {
+                static[Symbol.hasInstance](obj) {
+                    return Number(obj) % 2 === 0;
+                }
+            }
+            1 instanceof Even; // false
+            2 instanceof Even; // true
+            12345 instanceof Even; // false
+        }
+        //9.Symbol.isConcatSpreadable  
+        {
+            //对象的Symbol.isConcatSpreadable属性等于一个布尔值，表示该对象使用Array.prototype.concat()时，是否可以展开
+            let arr1 = ['c', 'd'];
+            ['a', 'b'].concat(arr1, 'e'); // ['a', 'b', 'c', 'd', 'e']
+            arr1[Symbol.isConcatSpreadable]; // undefined
+
+            let arr2 = ['c', 'd'];
+            arr2[Symbol.isConcatSpreadable] = false;
+            ['a', 'b'].concat(arr2, 'e'); // ['a', 'b', ['c','d'], 'e']
+            // /对于一个类来说，Symbol.isConcatSpreadable属性必须写成实例的属性。
+            class A1 extends Array {
+                constructor(args) {
+                    super(args);
+                    this[Symbol.isConcatSpreadable] = true;
+                }
+            }
+            class A2 extends Array {
+                constructor(args) {
+                    super(args);
+                    this[Symbol.isConcatSpreadable] = false;
+                }
+            }
+            let a1 = new A1();
+            a1[0] = 3;
+            a1[1] = 4;
+            let a2 = new A2();
+            a2[0] = 5;
+            a2[1] = 6;
+            [1, 2].concat(a1).concat(a2); // [1, 2, 3, 4, [5, 6]]
+        }
+        //10.Symbol.species
+        {
+            class A1 extends Object {
+                constructor(args) {
+                    super(args);
+                    a.constructor[Symbol.species];
+                }
+                static get[Symbol.species]() {
+                    return this;
+                }
+            }
+            let a = new A1();
+            a.constructor[Symbol.species];
+>>>>>>> 1c5b0cd9c408144e629f07fa1e2e45670e4a5ecf
         }
     </script>
 </body>
