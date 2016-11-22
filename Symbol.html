@@ -387,6 +387,72 @@
             }
 
         }
+        //Symbol.toPrimitive
+        {
+            //对象的Symbol.toPrimitive属性， 指向一个方法。 该对象被转为原始类型的值时， 会调用这个方法， 返回该对象对应的原始类型值。
+            //Symbol.toPrimitive被调用时， 会接受一个字符串参数， 表示当前运算的模式， 一共有三种模式。
+            //Number： 该场合需要转成数值
+            //String： 该场合需要转成字符串
+            //Default： 该场合可以转成数值， 也可以转成字符串
+
+            let obj = {
+                [Symbol.toPrimitive](hint) {
+                    switch (hint) {
+                        case 'number':
+                            return 123;
+                        case 'string':
+                            return 'str';
+                        case 'default':
+                            return 'default';
+                        default:
+                            throw new Error();
+                    }
+                }
+            };
+
+            2 * obj; // 246
+            3 + obj; // '3default'
+            3 / obj;
+            obj == 'default'; // true
+            String(obj); // 'str
+        }
+        //Symbol.toStringTag
+        {
+            //对象的Symbol.toStringTag属性， 指向一个方法。 在该对象上面调用Object.prototype.toString方法时， 如果这个属性存在， 它的返回值会出现在toString方法返回的字符串之中， 表示对象的类型。 也就是说， 这个属性可以用来定制[object Object] 或[object Array] 中object后面的那个字符串。
+
+            ({
+                [Symbol.toStringTag]: 'Foo'
+            }.toString());
+            // "[object Foo]"
+
+            class Collection {
+                get[Symbol.toStringTag]() {
+                    return 'xxx';
+                }
+            }
+            var x = new Collection();
+            Object.prototype.toString.call(x); // "[object xxx]"
+            x.constructor.toString();
+            //ES6新增内置对象的Symbol.toStringTag属性值如下。
+
+            // JSON[Symbol.toStringTag]：'JSON'
+            // Math[Symbol.toStringTag]：'Math'
+            // Module对象M[Symbol.toStringTag]：'Module'
+            // ArrayBuffer.prototype[Symbol.toStringTag]：'ArrayBuffer'
+            // DataView.prototype[Symbol.toStringTag]：'DataView'
+            // Map.prototype[Symbol.toStringTag]：'Map'
+            // Promise.prototype[Symbol.toStringTag]：'Promise'
+            // Set.prototype[Symbol.toStringTag]：'Set'
+            // %TypedArray%.prototype[Symbol.toStringTag]：'Uint8Array'等
+            // WeakMap.prototype[Symbol.toStringTag]：'WeakMap'
+            // WeakSet.prototype[Symbol.toStringTag]：'WeakSet'
+            // %MapIteratorPrototype%[Symbol.toStringTag]：'Map Iterator'
+            // %SetIteratorPrototype%[Symbol.toStringTag]：'Set Iterator'
+            // %StringIteratorPrototype%[Symbol.toStringTag]：'String Iterator'
+            // Symbol.prototype[Symbol.toStringTag]：'Symbol'
+            // Generator.prototype[Symbol.toStringTag]：'Generator'
+
+        }
     </script>
 </body>
 
