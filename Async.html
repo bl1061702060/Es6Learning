@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>异步操作和Async函数</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <script>
+        //1. 基本概念
+        {
+            //异步
+            //所谓"异步"，简单说就是一个任务分成两段，先执行第一段，然后转而执行其他任务，等做好了准备，再回过头执行第二段
+
+            //回调函数
+            //所谓回调函数，就是把任务的第二段单独写在一个函数里面，等到重新执行这个任务的时候，就直接调用这个函数。它的英语名字callback，直译过来就是"重新调用"。
+
+            //Promise
+            //将回调函数的嵌套改成链式调用
+        }
+        //2.Generator 函数
+        {
+            //协程
+            // 协程有点像函数，又有点像线程。它的运行流程大致如下。
+            //  -第一步，协程A开始执行。
+            //  -第二步，协程A执行到一半，进入暂停，执行权转移到协程B。
+            //  -第三步，（一段时间后）协程B交还执行权。
+            //  -第四步，协程A恢复执行。
+
+            var fetch = function(url) {
+                var promise = new Promise(function(resolve, reject) {
+                    var client = new XMLHttpRequest();
+                    client.open("GET", url);
+                    client.onreadystatechange = handler;
+                    client.responseType = "json";
+                    client.setRequestHeader("Accept", "application/json");
+                    client.send();
+
+                    function handler() {
+                        if (this.readyState !== 4) {
+                            return;
+                        }
+                        if (this.status === 200) {
+                            resolve(this.response);
+                        } else {
+                            reject(new Error(this.statusText));
+                        }
+                    };
+                });
+
+                return promise;
+            };
+
+            function* gen() {
+                var url = 'https://api.github.com/users/github';
+                var result = yield fetch(url);
+                console.log(result.bio);
+            }
+
+            //上面代码中， Generator函数封装了一个异步操作， 该操作先读取一个远程接口， 然后从JSON格式的数据解析信息。 就像前面说过的， 这段代码非常像同步操作， 除了加上了yield命令。
+
+            //执行这段代码的方法如下。
+            var g = gen();
+            var result = g.next();
+
+            result.value.then(function(data) {
+                return data;
+            }).then(function(data) {
+                g.next(data);
+            });
+            //可以看到，虽然 Generator 函数将异步操作表示得很简洁，但是流程管理却不方便（即何时执行第一阶段、何时执行第二阶段）。
+        }
+        //3. Thunk函数
+        {
+            //参数的求值策略
+            var x = 1;
+
+            function f(m) {
+                return m * 2;
+            }
+            f(x + 5);
+            //先定义函数f，然后向它传入表达式x + 5。请问，这个表达式应该何时求值？
+
+            //一种意见是"传值调用"（call by value），即在进入函数体之前，就计算x + 5的值（等于6），再将这个值传入函数f 。C语言就采用这种策略。
+            //f(x + 5)
+            // 传值调用时，等同于
+            //f(6)
+
+            //另一种意见是"传名调用"（call by name），即直接将表达式x + 5传入函数体，只在用到它的时候求值。Haskell语言采用这种策略。
+            //f(x + 5)
+            // 传名调用时，等同于
+            //(x + 5) * 2
+
+            //优缺点
+            //传值调用比较简单，但是对参数求值的时候，实际上还没用到这个参数，有可能造成性能损失。
+
+            //Thunk函数的含义
+
+            //编译器的"传名调用"实现，往往是将参数放到一个临时函数之中，再将这个临时函数传入函数体。这个临时函数就叫做Thunk函数。
+            // function f(m) {
+            //     return m * 2;
+            // }
+            // f(x + 5);
+            // // 等同于
+            // var thunk = function() {
+            //     return x + 5;
+            // };
+            // function f(thunk) {
+            //     return thunk() * 2;
+            // }
+        }
+        //4.JavaScript语言的Thunk函数 
+        {
+            //JavaScript语言是传值调用，它的Thunk函数含义有所不同。在JavaScript语言中，Thunk函数替换的不是表达式，而是多参数函数，将其替换成单参数的版本，且只接受回调函数作为参数。
+
+            //任何函数，只要参数有回调函数，就能写成Thunk函数的形式。下面是一个简单的Thunk函数转换器。
+            // ES5版本
+            var Thunk = function(fn) {
+                return function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    return function(callback) {
+                        args.push(callback);
+                        return fn.apply(this, args);
+                    }
+                };
+            };
+
+            // ES6版本
+            var Thunk = function(fn) {
+                return function(...args) {
+                    return function(callback) {
+                        return fn.call(this, ...args, callback);
+                    }
+                };
+            };
+
+            //下面是另一个完整的例子。
+            function f(a, cb) {
+                cb(a);
+            }
+            let ft = Thunk(f);
+            let log = console.log.bind(console);
+            ft(1)(log); // 1
+
+            //Promise实现 generator 的自动执行
+            let gen = function*() {
+                var x = yield new Promise((resolve, reject) => {
+                    resolve();
+                    console.log("step1")
+                });
+                var x1 = yield new Promise((resolve, reject) => {
+                    resolve();
+                    console.log("step2")
+                });
+                var x2 = yield new Promise((resolve, reject) => {
+                    resolve();
+                    console.log("step3")
+                });
+                console.log("step done");
+            }
+
+            function run(gen) {
+                var g = gen();
+
+                function next(data) {
+                    var result = g.next(data);
+                    if (result.done) return result.value;
+                    result.value.then(function(data) {
+                        next(data);
+                    });
+                }
+                next();
+            }
+            run(gen);
+        }
+    </script>
+</body>
+
+</html>
