@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Class</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <body>
+        <script>
+            //1. Class基本语法
+            {
+                //ES6提供了更接近传统语言的写法，引入了Class（类）这个概念，作为对象的模板。通过class关键字，可以定义类。基本上，ES6的class可以看作只是一个语法糖，它的绝大部分功能，ES5都可以做到，新的class写法只是让对象原型的写法更加清晰、更像面向对象编程的语法而已。
+
+                //定义类
+                //ES5
+                function Point1(x, y) {
+                    this.x = x;
+                    this.y = y;
+                }
+                Point1.prototype.toString = function toString() {
+                    return '(' + this.x + ', ' + this.y + ')';
+                };
+
+                //ES6
+                class Point2 {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                    }
+                    toString() {
+                        return '(' + this.x + ', ' + this.y + ')';
+                    }
+                }
+
+                let p1 = new Point1(1, 2);
+                let p2 = new Point2(1, 2);
+                p1.toString();
+                p2.toString();
+
+                typeof Point2; // "function"
+                Point2 === Point2.prototype.constructor; // true
+
+                // 构造函数的prototype属性， 在ES6的“ 类” 上面继续存在。 事实上， 类的所有方法都定义在类的prototype属性上面。
+                // class Point {
+                //     constructor() {
+                //         // ...
+                //     }
+                //     toString() {
+                //         // ...
+                //     }
+                //     toValue() {
+                //         // ...
+                //     }
+                // }
+                // // 等同于
+                // Point.prototype = {
+                //     toString() {},
+                //     toValue() {}
+                // };
+
+                //在类的实例上面调用方法，其实就是调用原型上的方法。
+                class A {}
+
+                class B {
+                    constructor() {
+                        return new A();
+                    }
+                }
+
+                let C = B.bind(this, B.prototype.constructor); //相当于 A.bind(this, A.prototype.constructor);
+                let a = new A();
+                let b = new B();
+                let c = new C();
+                b.constructor === A.prototype.constructor; // true
+                b.__proto__ === B.prototype; // false 
+                b.constructor === B; // false
+
+                //由于类的方法都定义在prototype对象上面， 所以类的新方法可以添加在prototype对象上面。 Object.assign方法可以很方便地一次向类添加多个方法。
+                class Point3 {
+                    constructor() {
+                        // ...
+                    }
+                }
+
+                Object.assign(Point3.prototype, {
+                    toString() {},
+                    toValue() {}
+                });
+
+                //类的内部所有定义的方法，都是不可枚举的（non-enumerable）,这与ES5不一致。
+                class Point4 {
+                    toString() {}
+                }
+                Object.keys(Point4.prototype);
+                // []
+                Object.getOwnPropertyNames(Point4.prototype);
+                // ["constructor","toString"]
+
+                //类的属性名， 可以采用表达式。
+                let methodName = "getArea";
+                class Square {
+                    constructor(length) {
+                            // ...
+                        }
+                        [methodName]() {
+                            // ...
+                        }
+                }
+            }
+            //constructor方法 
+            {
+                //constructor方法是类的默认方法，通过new命令生成对象实例时，自动调用该方法。一个类必须有constructor方法，如果没有显式定义，一个空的constructor方法会被默认添加。
+                class Foo {
+                    constructor() {
+                        return Object.create(null);
+                    }
+                }
+                new Foo() instanceof Foo;
+                // false
+
+                //类的构造函数， 不使用new是没法调用的， 会报错。 这是它跟普通构造函数的一个主要区别， 后者不用new也可以执行。
+                //ES6
+                class Foo1 {
+                    constructor() {
+                        return Object.create(null);
+                    }
+                }
+                try {
+                    Foo1();
+                } catch (e) {
+                    console.log("invoke Foo1 error:", e);
+                    // TypeError: Class constructor Foo cannot be invoked without 'new'
+                }
+
+                //ES5
+                function Foo2() {}
+                Foo2.prototype.constructor = function constructor() {
+                    return Object.create(null);
+                }
+                Foo2();
+            }
+            //实例对象
+            {
+                //与ES5一样，实例的属性除非显式定义在其本身（即定义在this对象上），否则都是定义在原型上（即定义在class上）。
+                //定义类
+                class Point {
+
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                    }
+
+                    toString() {
+                        return '(' + this.x + ', ' + this.y + ')';
+                    }
+
+                }
+                var point = new Point(2, 3);
+                point.toString(); // (2, 3)
+                point.hasOwnProperty('x'); // true
+                point.hasOwnProperty('y'); // true
+                point.hasOwnProperty('toString'); // false
+                point.__proto__.hasOwnProperty('toString'); // true
+
+                //不存在变量提升
+
+                //Class不存在变量提升（ hoist）， 这一点与ES5完全不同。
+                //new Foo(); // ReferenceError
+                //class Foo {}
+            }
+            //Class表达式
+            {
+                const MyClass = class Me {
+                    getClassName() {
+                        return Me.name;
+                    }
+                };
+                //这个类的名字是MyClass而不是Me，Me只在Cla
+                let a = new MyClass();
+
+                //如果类的内部没用到的话， 可以省略Me， 也就是可以写成下面的形式。
+                const MyClass1 = class { /* ... */ };
+
+                //采用Class表达式， 可以写出立即执行的Class。
+                let person = new class {
+                    constructor(name) {
+                        this.name = name;
+                    }
+
+                    sayName() {
+                        console.log(this.name);
+                    }
+                }('张三');
+                person.sayName(); // "张三"
+            }
+            //私有方法
+            {
+                //私有方法是常见需求，但ES6不提供，只能通过变通方法模拟实现。
+                //一种做法是在命名上加以区别。
+                class Widget {
+                    // 公有方法
+                    foo(baz) {
+                            this._bar(baz);
+                        }
+                        // 私有方法
+                    _bar(baz) {
+                            return this.snaf = baz;
+                        }
+                        // ...
+                }
+
+                //另一种方法就是索性将私有方法移出模块， 因为模块内部的所有方法都是对外可见的。
+                class Widget1 {
+                    foo(baz) {
+                        bar.call(this, baz);
+                    }
+
+                    // ...
+                }
+
+                function bar(baz) {
+                    return this.snaf = baz;
+                }
+                let w = new Widget1();
+                w.foo("hello");
+                w.snaf; //hello 这个实际上是可见的。
+
+                //还有一种方法是利用Symbol值的唯一性，将私有方法的名字命名为一个Symbol值。
+                const bar1 = Symbol('bar');
+                const snaf1 = Symbol('snaf');
+
+                class Widget2 {
+                    // 公有方法
+                    foo(baz) {
+                            this[bar1](baz);
+                        }
+                        // 私有方法
+                        [bar1](baz) {
+                            return this[snaf1] = baz;
+                        }
+                        // ...
+                };
+                let w2 = new Widget2();
+                w2.foo("hello");
+                w2[Symbol('snaf')]; //undefined
+            }
+            //this的指向
+            {
+                //类的方法内部如果含有this，它默认指向类的实例。但是，必须非常小心，一旦单独使用该方法，很可能报错。
+                class Logger {
+                    printName(name = 'there') {
+                        this.print(`Hello ${name}`);
+                    }
+                    print(text) {
+                        console.log(text);
+                    }
+                }
+                const logger = new Logger();
+                const {
+                    printName
+                } = logger;
+                //printName(); // TypeError: Cannot read property 'print' of undefined
+
+                //一个比较简单的解决方法是， 在构造方法中绑定this， 这样就不会找不到print方法了。
+                class Logger1 {
+                    constructor() {
+                        this.printName = this.printName.bind(this);
+                    }
+
+                    // ...
+                }
+
+                //另一种解决方法是使用箭头函数。
+                class Logger2 {
+                    constructor() {
+                        this.printName = (name = 'there') => {
+                            this.print(`Hello ${name}`);
+                        };
+                    }
+
+                    // ...
+                }
+
+                //还有一种解决方法是使用Proxy， 获取方法的时候， 自动绑定this。
+                function selfish(target) {
+                    const cache = new WeakMap();
+                    const handler = {
+                        get(target, key) {
+                            const value = Reflect.get(target, key);
+                            if (typeof value !== 'function') {
+                                return value;
+                            }
+                            if (!cache.has(value)) {
+                                cache.set(value, value.bind(target));
+                            }
+                            return cache.get(value);
+                        }
+                    };
+                    const proxy = new Proxy(target, handler);
+                    return proxy;
+                }
+
+                const logger1 = selfish(new Logger());
+            }
+            //严格模式
+
+            //类和模块的内部， 默认就是严格模式， 所以不需要使用use strict指定运行模式。 只要你的代码写在类或模块之中， 就只有严格模式可用。
+            //考虑到未来所有的代码， 其实都是运行在模块之中， 所以ES6实际上把整个语言升级到了严格模式。
+
+            //name属性
+            {
+                //由于本质上， ES6的类只是ES5的构造函数的一层包装， 所以函数的许多特性都被Class继承， 包括name属性。
+                class Point {}
+                Point.name; // "Point"
+                //name属性总是返回紧跟在class关键字后面的类名。
+            }
+
+            //2. Class的继承
+            {
+                //基本用法
+                //Class之间可以通过extends关键字实现继承，这比ES5的通过修改原型链实现继承，要清晰和方便很多
+                class Father {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                    }
+                    toString() {
+                        return '(' + this.x + ', ' + this.y + ')';
+                    }
+                }
+
+                class Son extends Father {
+                    constructor(x, y, color) {
+                        super(x, y); //调用Father的constructor
+                        this.color = color;
+                    }
+                    toString() {
+                        return this.color + ' ' + super.toString(); // 调用父类的toString()
+                    }
+                }
+                let son1 = new Son(1, 2, 'Red');
+                son1.toString(); //"Red (1, 2)"
+
+                //子类必须在constructor方法中调用super方法，否则新建实例时会报错。
+                //ES5的继承，实质是先创造子类的实例对象this，然后再将父类的方法添加到this上面（Parent.apply(this)）。ES6的继承机制完全不同，实质是先创造父类的实例对象this（所以必须先调用super方法），然后再用子类的构造函数修改this。
+                class Point { /* ... */ }
+
+                class ColorPoint extends Point {
+                    constructor() {}
+                }
+                //let cp = new ColorPoint(); // ReferenceError
+
+                //如果子类没有定义constructor方法，这个方法会被默认添加，代码如下。也就是说，不管有没有显式定义，任何一个子类都有constructor方法。
+                class Son1 extends Father {
+
+                }
+                let son2 = new Son1();
+
+                //在子类的构造函数中，只有调用super之后，才可以使用this关键字，否则会报错。这是因为子类实例的构建，是基于对父类实例加工，只
+
+                class Son2 extends Father {
+                    constructor(x, y, color) {
+                        //this.color = color; // ReferenceError
+                        super(x, y);
+                        this.color = color; // 正确
+                    }
+                }
+
+                let son3 = new Son2(1, 2, 'blue');
+
+                son3 instanceof Son2; // true
+                son3 instanceof Father; // true
+                //上面代码中， 实例对象son3同时是Son2和Father两个类的实例， 这与ES5的行为完全一致。
+            }
+            //类的prototype属性和__proto__属性
+            {
+                //（1）子类的__proto__属性，表示构造函数的继承，总是指向父类。
+                //（2）子类prototype属性的__proto__属性，表示方法的继承，总是指向父类的prototype属性。
+
+                class A {}
+
+                class B extends A {}
+                let b = new B();
+                B.__proto__ === A; // true
+                B.prototype.constructor === B.prototype.constructor.prototype.constructor; //true 无限自调用
+                B.prototype.__proto__ === A.prototype; // true
+                b.__proto__ === B.prototype;
+
+                Object.setPrototypeOf = function(obj, proto) {
+                    obj.__proto__ = proto;
+                    return obj;
+                }
+                class C {}
+
+                class D {}
+
+                // B的实例继承A的实例
+                Object.setPrototypeOf(D.prototype, C.prototype);
+                // B继承A的静态属性
+                Object.setPrototypeOf(D, C);
+            }
+            //Extend
+            {
+                //只要是一个有prototype属性的函数，就能被B继承。由于函数都有prototype属性（除了Function.prototype函数），因此A可以是任意函数。
+
+                //第一种特殊情况，子类继承Object类。
+                class A extends Object {}
+
+                A.__proto__ === Object; // true
+                A.prototype.__proto__ === Object.prototype; // true
+
+                //这种情况下， A其实就是构造函数Object的复制， A的实例就是Object的实例。
+
+                // 第二种特殊情况， 不存在任何继承。
+                class A1 {}
+
+                A1.__proto__ === Function.prototype; // true
+                A1.prototype.__proto__ === Object.prototype; // true
+
+                //这种情况下， A作为一个基类（ 即不存在任何继承）， 就是一个普通函数， 所以直接继承Funciton.prototype。 但是， A调用后返回一个空对象（ 即Object实例）， 所以A.prototype.__proto__指向构造函数（ Object） 的prototype属性。
+
+                //第三种特殊情况， 子类继承null。
+                class A2 extends null {}
+                A2.__proto__ === Function.prototype; // true
+                A2.prototype.__proto__ === undefined; // true
+            }
+            //Object.getPrototypeOf()
+            {
+                //Object.getPrototypeOf方法可以用来从子类上获取父类。
+                class A {}
+                class B extends A {}
+                Object.getPrototypeOf(B) === A;
+                // true
+            }
+            //super 关键字
+            {
+                //第一种情况， super作为函数调用时， 代表父类的构造函数。 ES6 要求， 子类的构造函数必须执行一次super函数。
+                class A {}
+
+                class B extends A {
+                    constructor() {
+                        super();
+                    }
+                }
+                //上面代码中， 子类B的构造函数之中的super()， 代表调用父类的构造函数。 这是必须的， 否则 JavaScript 引擎会报错。
+                //注意， super虽然代表了父类A的构造函数， 但是返回的是子类B的实例， 即super内部的this指的是B， 因此super() 在这里相当于A.prototype.constructor.call(this)。
+
+                //第二种情况，super作为对象时，指向父类的原型对象。
+                class C {
+                    p() {
+                        return 2;
+                    }
+                }
+                class D extends C {
+                    constructor() {
+                        super();
+                        console.log(super.p()); // 2
+                    }
+                }
+                let b = new D();
+
+            }
+            //实例的__proto__属性
+            {
+
+                //子类实例的__proto__属性的__proto__属性， 指向父类实例的__proto__属性。 也就是说， 子类的原型的原型， 是父类的原型。
+                var p1 = new Point(2, 3);
+                var p2 = new ColorPoint(2, 3, 'red');
+
+                p2.__proto__ === p1.__proto__; // false
+                p2.__proto__.__proto__ === p1.__proto__; // true
+
+                //上面代码中， ColorPoint继承了Point， 导致前者原型的原型是后者的原型。
+                //因此， 通过子类实例的__proto__.__proto__属性， 可以修改父类实例的行为。
+                p2.__proto__.__proto__.printName = function() {
+                    console.log('Ha');
+                };
+                p1.printName(); // "Ha"
+
+            }
+        </script>
+    </body>
+
+</html>
