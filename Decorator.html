@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>修饰器</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <script>
+        //ES7的一个提案
+        //修饰器（Decorator）是一个函数，用来修改类的行为。这是ES7的一个提案，目前Babel转码器已经支持。
+        //修饰器只能用于类和类的方法，不能用于函数，因为存在函数提升。
+        //1. 类的修饰
+        // function testable(target) {
+        //     target.isTestable = true;
+        // }
+        // @testable
+        // class MyTestableClass {}
+        // console.log(MyTestableClass.isTestable) // true
+
+        //2. 方法的修饰
+
+        // 修饰器不仅可以修饰类， 还可以修饰类的属性。
+        // class Person {
+        //     @readonly
+        //     name() {
+        //         return `${this.first} ${this.last}`
+        //     }
+        // }
+    </script>
+</body>
+
+</html>
