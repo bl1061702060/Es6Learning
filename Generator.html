@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <div id="show">
+    </div>
+    <div id="show1">
+    </div>
+    <div id="show2">
+    </div>
+    <script>
+    {
+        "use strict";
+        function* foo(x){
+            var y = 2 * (yield (x + 1));
+            var z = yield (y / 3);
+            return (x + y + z);
+        }
+        var b = foo(5);
+        var dom = document.getElementById("show");
+        var dom1 = document.getElementById("show1");
+        var dom2 = document.getElementById("show2");
+        dom.innerHTML =  b.next().value;
+        dom1.innerHTML =  b.next(12).value;
+        dom2.innerHTML =  b.next(13).value;
+    }
+</script>
+</body>
+
+</html>
